@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PWA Archive</title>
+
+  <!-- PWA 기본 메타 -->
+  <meta name="theme-color" content="#1a1a2e">
+  <link rel="manifest" href="manifest.json">
+
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      text-align: center;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>📱 PWA Archive</h1>
+    <p>Vercel URL 생성용 테스트 페이지</p>
+  </div>
+
+  <script>
+    // Service Worker 등록 (기본형)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.log("SW error", err));
+    }
+  </script>
+</body>
+</html>
