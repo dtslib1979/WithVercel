@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>모바일 퍼스트 글쓰기 OS (Writing OS)</title>
+<meta name="description" content="영감님 넋두리를 모바일 퍼스트로 구현한 글쓰기 OS — 블로그 전략, 에이전트(Agents), 자동화(Automation), PWA 마인드셋" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
+<style>
+  :root{
+    --bg: #0b0c10;
+    --fg: #e5f0ff;
+    --muted:#9bb0bf;
+    --brand:#6ee7ff;
+    --accent:#7af5b9;
+    --card:#11131a;
+    --edge:#1d2330;
+    --shadow: 0 10px 25px rgba(0,0,0,.35);
+    --radius: 18px;
+  }
+  [data-theme="light"]{
+    --bg:#f7fbff; --fg:#0b1b2b; --muted:#5b6b78; --brand:#0066ff; --accent:#0bbd87;
+    --card:#ffffff; --edge:#dfe8f2; --shadow:0 10px 25px rgba(0,30,60,.10);
+  }
+  html,body{height:100%}
+  body{
+    margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    background: radial-gradient(1200px 800px at 80% -10%, rgba(110,231,255,.15), transparent 60%),
+                radial-gradient(1200px 800px at 10% -20%, rgba(122,245,185,.14), transparent 55%),
+                var(--bg);
+    color:var(--fg); line-height:1.5;
+  }
+  .wrap{max-width:1000px; margin:0 auto; padding:20px; }
+  header{
+    position:sticky; top:0; z-index:10; backdrop-filter: blur(8px);
+    background: color-mix(in oklab, var(--bg) 85%, transparent);
+    border-bottom:1px solid var(--edge);
+  }
+  .bar{display:flex; align-items:center; gap:10px; padding:10px 0;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.2px}
+  .chip{font-size:12px; padding:2px 8px; border:1px solid var(--edge); border-radius:999px; color:var(--muted)}
+  .btn{cursor:pointer; border:1px solid var(--edge); background:var(--card); color:var(--fg);
+       border-radius:12px; padding:10px 14px; box-shadow:var(--shadow); transition:.2s}
+  .btn:hover{transform: translateY(-1px)}
+  .grid{display:grid; gap:16px}
+  @media (min-width:840px){ .grid-2{grid-template-columns:1.2fr .8fr} }
+
+  .card{
+    background: linear-gradient(180deg, color-mix(in oklab, var(--card) 95%, transparent), var(--card));
+    border:1px solid var(--edge); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;
+  }
+  .card .head{padding:16px 16px 0; color:var(--muted); font-size:13px; letter-spacing:.3px}
+  .card .body{padding:16px}
+  .h1{font-weight:900; font-size:clamp(28px, 7vw, 54px); line-height:1.05; letter-spacing:-.5px}
+  .h2{font-weight:800; font-size:clamp(18px, 3.2vw, 22px)}
+  .lead{color:var(--muted)}
+  .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Roboto Mono", monospace}
+  .kbd{border:1px solid var(--edge); background:var(--bg); padding:2px 6px; border-radius:6px; font-family:inherit}
+  .hero{
+    position:relative; border-radius:var(--radius); overflow:hidden; min-height:220px;
+    background: radial-gradient(600px 300px at 70% 0%, rgba(110,231,255,.18), transparent 60%),
+               linear-gradient(180deg, rgba(122,245,185,.10), transparent 40%), var(--card);
+    border:1px solid var(--edge);
+  }
+  .hero svg{position:absolute; inset:0; width:100%; height:100%}
+  .hero .txt{position:relative; padding:22px}
+  .badge{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border:1px dashed var(--edge);
+         border-radius:999px; background:color-mix(in oklab, var(--card) 92%, transparent); color:var(--muted); font-size:12px}
+  .pill{display:inline-flex; gap:8px; flex-wrap:wrap}
+  .pill .t{padding:6px 10px; border:1px solid var(--edge); border-radius:999px}
+  .accent{color:var(--accent)}
+  .brandc{color:var(--brand)}
+  .row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+
+  /* Accordion */
+  details{border-top:1px solid var(--edge); padding:10px 0}
+  summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:8px; color:var(--muted)}
+  summary::-webkit-details-marker{display:none}
+  details[open] summary{color:var(--fg)}
+
+  /* Table */
+  table{width:100%; border-collapse:collapse; font-size:14px; overflow:auto}
+  th, td{padding:10px 12px; border-bottom:1px solid var(--edge); vertical-align:top}
+  th{color:var(--muted); text-align:left; font-weight:700}
+  tr:hover td{background: color-mix(in oklab, var(--card) 92%, transparent)}
+
+  /* Footer */
+  footer{color:var(--muted); font-size:12px; padding:40px 0 20px}
+
+  /* Floating copy toast */
+  .toast{
+    position:fixed; left:50%; bottom:20px; transform:translateX(-50%) translateY(20px);
+    background:var(--card); border:1px solid var(--edge); padding:10px 14px; border-radius:10px;
+    opacity:0; pointer-events:none; transition:.25s; box-shadow:var(--shadow);
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div class="brand">
+      <span style="font-size:22px">✍️</span>
+      <div>모바일 퍼스트 글쓰기 OS <span class="chip">PWA Mindset</span></div>
+    </div>
+    <div style="flex:1"></div>
+    <button class="btn" id="themeBtn" aria-label="테마 전환 (Theme Toggle)">🌓 테마</button>
+    <button class="btn" id="copyAll" data-copy="#export" aria-label="전체 복사 (Copy All)">📋 복사</button>
+  </div>
+</header>
+
+<main class="wrap grid grid-2">
+  <!-- HERO -->
+  <section class="hero card">
+    <svg viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="g1" x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0%" stop-color="var(--brand)" stop-opacity=".8"/>
+          <stop offset="100%" stop-color="var(--accent)" stop-opacity=".8"/>
+        </linearGradient>
+        <linearGradient id="g2" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="var(--brand)" stop-opacity=".35"/>
+          <stop offset="100%" stop-color="transparent"/>
+        </linearGradient>
+      </defs>
+      <!-- animated path -->
+      <path id="wave" d="M0,240 C150,180 250,260 400,200 C550,140 650,220 800,160 C900,120 1000,160 1100,120"
+            fill="none" stroke="url(#g1)" stroke-width="4">
+        <animate attributeName="d" dur="8s" repeatCount="indefinite"
+          values="M0,240 C150,180 250,260 400,200 C550,140 650,220 800,160 C900,120 1000,160 1100,120;
+                  M0,220 C150,200 250,200 400,220 C550,180 650,240 800,180 C900,160 1000,180 1100,140;
+                  M0,240 C150,180 250,260 400,200 C550,140 650,220 800,160 C900,120 1000,160 1100,120" />
+      </path>
+      <rect x="0" y="0" width="1000" height="300" fill="url(#g2)"/>
+    </svg>
+    <div class="txt">
+      <div class="badge">모바일 생산(Mobile Production) · 자동화(Automation) · 에이전트(Agents)</div>
+      <h1 class="h1">“텍스트의 끝은 코드(Code)다.”</h1>
+      <p class="lead">말→글→코드로 이어지는 <b class="accent">한손 작업(One-Handed Workflow)</b>. 핸드폰에서 시작해서 바로 퍼블리시(Publish)까지.</p>
+      <div class="pill" style="margin-top:10px">
+        <span class="t">LLM(ChatGPT/Claude)</span>
+        <span class="t">PWA(Progressive Web App)</span>
+        <span class="t">GitHub Pages</span>
+        <span class="t">WordPress</span>
+        <span class="t">Obsidian Publish</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUICK NOTES -->
+  <section class="card">
+    <div class="head mono">Log → Library → Resume → Portfolio</div>
+    <div class="body">
+      <h2 class="h2">글을 쓰는 이유(Why Write?)</h2>
+      <ul>
+        <li>나에 대한 <b>로그(Log)</b>, <b>서재(Library)</b>, <b>레쥬메(Resume)</b>, <b>포트폴리오(Portfolio)</b>.</li>
+        <li>핵심: <b class="brandc">반복 작업 = 프로그래밍(Programming)</b> → 자동화(Automation).</li>
+        <li>모바일 우선: <span class="kbd">음성 타이핑(Voice TTS)</span> + 한 손 제스처.</li>
+      </ul>
+      <details>
+        <summary>말의 3가지 종류 (3 Kinds of Speech)</summary>
+        <ul>
+          <li>개념어(Concept): <b>교재(Manual)·재생산(Reproduction)</b></li>
+          <li>감정어(Emotion): <b>소설(Fiction)·소비(Consumption)</b></li>
+          <li>어순·문법(Syntax): <b>프로그래밍(Production)</b></li>
+        </ul>
+      </details>
+    </div>
+  </section>
+
+  <!-- TABLE (필수) -->
+  <section class="card" id="platforms">
+    <div class="head mono">Platforms Table</div>
+    <div class="body">
+      <h2 class="h2">플랫폼 매핑(Platform Mapping)</h2>
+      <div style="overflow:auto">
+        <table aria-label="블로그/플랫폼 전략 표">
+          <thead>
+            <tr>
+              <th>플랫폼 (Platform)</th>
+              <th>용도 (Purpose)</th>
+              <th>입력(Authoring)</th>
+              <th>유료/수익 (Monetize)</th>
+              <th>비고 (Notes)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>네이버 블로그 (Naver Blog)</td>
+              <td>빠른 기록 · 공개 드래프트 (Public Draft)</td>
+              <td>모바일 음성 · 간편 포스팅</td>
+              <td>간접 수익(트래픽·레퍼럴)</td>
+              <td>검색 노출 강함</td>
+            </tr>
+            <tr>
+              <td>티스토리 (Tistory)</td>
+              <td>아카이브(Archive) · 긴 글</td>
+              <td>웹/모바일 에디터</td>
+              <td>애드센스(Adsense) 등</td>
+              <td>태그·카테고리 관리 용이</td>
+            </tr>
+            <tr>
+              <td>깃허브 페이지 (GitHub Pages)</td>
+              <td>정적 웹앱(Static Web) · PWA</td>
+              <td>Markdown/HTML · Git</td>
+              <td>템플릿 판매 연계</td>
+              <td>자동화(CI/CD) 최강</td>
+            </tr>
+            <tr>
+              <td>워드프레스 (WordPress)</td>
+              <td>상점(Commerce) · 결제(Payments)</td>
+              <td>PC 관리 + 에이전트</td>
+              <td><b>직접 수익</b> (유료 판매)</td>
+              <td>플러그인 생태계</td>
+            </tr>
+            <tr>
+              <td>옵시디언 퍼블리시 (Obsidian Publish)</td>
+              <td>러프→정리→지식베이스</td>
+              <td>태블릿 드로잉 + 노트</td>
+              <td>프리미엄 컨텐츠 게이팅</td>
+              <td>무한캔버스(Excalidraw)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn" data-copy="#platforms">표 복사 (Copy Table)</button>
+        <span class="chip">핵심: “드래프트는 깃허브, 수익은 워드프레스·옵시디언”</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPORTABLE CONTENT -->
+  <section class="card" id="export">
+    <div class="head mono">Export Block · 복사 대상</div>
+    <div class="body">
+      <h2 class="h2">원칙(Principles)</h2>
+      <ol>
+        <li><b>모바일 생산(Mobile Production):</b> 핸드폰에서 쓰고, 바로 퍼블리시.</li>
+        <li><b>자동화(Automation):</b> 반복은 스크립트·에이전트(Agents)에게.</li>
+        <li><b>공개·비공개 라우팅(Routing):</b> 아이디어 등급별로 <span class="kbd">Public / Archive / Premium</span>.</li>
+      </ol>
+
+      <h2 class="h2" style="margin-top:18px">에이전트(Agents) · 툴(Tools)</h2>
+      <ul>
+        <li>핸드폰: <b>Claude Connector</b>로 포스팅 자동화</li>
+        <li>PC: <b>Claude MCP Desktop</b> + GitHub 연동</li>
+        <li>코딩·자동화: <b>GitHub Copilot Chat</b></li>
+      </ul>
+
+      <details open>
+        <summary>파일 트리(Repo Layout) 예시</summary>
+        <pre class="mono" style="white-space:pre-wrap">
+/content
+  /drafts      # 네이버/티스토리 동시 발췌(Draft)
+  /public      # 깃허브 페이지 배포(Publish)
+  /premium     # 워드프레스/옵시디언 유료
+/agents
+  mobile-connector.md   # 모바일 명령(Voice Prompts)
+  mcp-tasks.md          # 데스크탑 MCP 작업
+/scripts
+  export-to-ghpages.js
+  post-to-wordpress.js
+        </pre>
+      </details>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn" data-copy="#export">이 섹션 복사 (Copy Section)</button>
+        <button class="btn" id="mkPWA">PWA 스텁 생성 (Create PWA Stub)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CODE SNIPPETS -->
+  <section class="card">
+    <div class="head mono">Snippets · 즉시 활용</div>
+    <div class="body">
+      <h2 class="h2">깃허브 페이지(Pages) 배포 스니펫</h2>
+      <pre class="mono" id="snip1">
+# 1) 새 레포 생성 후 메인 브랜치 푸시
+git init && git add -A && git commit -m "init (mobile-first writing os)"
+git branch -M main
+git remote add origin &lt;YOUR_REPO_URL&gt;
+git push -u origin main
+
+# 2) GitHub Pages 설정: Settings → Pages → Source: GitHub Actions
+# 3) .github/workflows/deploy.yml 추가
+name: pages
+on:
+  push: { branches: [ main ] }
+permissions: { contents: read, pages: write, id-token: write }
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: upload
+        uses: actions/upload-pages-artifact@v3
+        with: { path: "." }
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions: { pages: write, id-token: write }
+    steps:
+      - uses: actions/deploy-pages@v4
+      </pre>
+      <div class="row">
+        <button class="btn" data-copy="#snip1">복사 (Copy)</button>
+      </div>
+
+      <h2 class="h2" style="margin-top:18px">워드프레스(WordPress) 포스팅 API 스니펫</h2>
+      <pre class="mono" id="snip2">
+curl -X POST https://your-site.com/wp-json/wp/v2/posts \
+  -u USER:APP_PASSWORD \
+  -H "Content-Type: application/json" \
+  -d '{"title":"모바일 퍼스트 글쓰기","status":"publish","content":"핸드폰에서 시작하는 자동화 글쓰기(OS)"}'
+      </pre>
+      <div class="row">
+        <button class="btn" data-copy="#snip2">복사 (Copy)</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHILOSOPHY -->
+  <section class="card">
+    <div class="head mono">Philosophy · 간단명료</div>
+    <div class="body">
+      <h2 class="h2">“했던 거 또 하지 말자.” (Do Not Repeat Yourself)</h2>
+      <p>LLM은 <b>개발자(Developer)</b>의 도구이자, <b>작가(Author)</b>의 붓. 텍스트의 끝이 코드라면, <b class="accent">글쓰기는 곧 앱(App)</b>이다.</p>
+      <ul>
+        <li><b>Draft → Automate → Publish</b>를 생활화.</li>
+        <li>핸드폰에서 <b class="brandc">뼈대(Skeleton)</b>, PC에서 <b>대량 처리(Batch)</b>.</li>
+        <li>공개·비공개 라우팅으로 기억력 100% 달성.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <div class="row">
+    <span class="chip">© 영감님 “모바일 퍼스트 글쓰기 OS”</span>
+    <span class="chip">SVG + Vanilla JS</span>
+    <span class="chip">Copy Buttons Included</span>
+  </div>
+  <p style="margin-top:8px">※ 추가 요청: 색상 팔레트, 로고 SVG, PWA 매니페스트/서비스워커 분리 가능.</p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite">복사 완료! (Copied)</div>
+
+<script>
+  // Theme toggle
+  const themeBtn = document.getElementById('themeBtn');
+  const isDark = () => document.documentElement.getAttribute('data-theme') !== 'light';
+  const setTheme = t => document.documentElement.setAttribute('data-theme', t);
+  themeBtn.addEventListener('click', ()=>{
+    setTheme(isDark() ? 'light' : 'dark');
+    localStorage.setItem('theme', isDark() ? 'dark' : 'light');
+  });
+  (function initTheme(){
+    const t = localStorage.getItem('theme'); if(t){ setTheme(t); }
+  })();
+
+  // Copy helpers
+  const toast = document.getElementById('toast');
+  function showToast(msg="복사 완료! (Copied)"){
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 1400);
+  }
+  async function copySelector(sel){
+    const el = document.querySelector(sel);
+    if(!el){ return; }
+    let text = "";
+    if(el.matches('pre, code')) text = el.innerText;
+    else text = el.innerText || el.textContent || "";
+    await navigator.clipboard.writeText(text.trim());
+    showToast();
+  }
+  document.querySelectorAll('[data-copy]').forEach(btn=>{
+    btn.addEventListener('click', ()=> copySelector(btn.getAttribute('data-copy')))
+  });
+
+  // Minimal PWA stub creator (inline)
+  const mkPWA = document.getElementById('mkPWA');
+  mkPWA?.addEventListener('click', ()=>{
+    const manifest = {
+      name: "모바일 퍼스트 글쓰기 OS",
+      short_name: "WritingOS",
+      start_url: ".",
+      display: "standalone",
+      background_color: "#0b0c10",
+      theme_color: "#0b0c10",
+      icons: []
+    };
+    const blob = new Blob([JSON.stringify(manifest,null,2)], {type:"application/json"});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = "manifest.json";
+    a.click();
+    showToast("manifest.json 생성!");
+  });
+</script>
+</body>
+</html>
