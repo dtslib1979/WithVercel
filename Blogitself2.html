@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모바일 퍼스트 글쓰기 OS - Writing OS</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a3a 50%, #2d1b69 100%);
+            color: #ffffff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .floating-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .hero-content {
+            text-align: center;
+            z-index: 10;
+            position: relative;
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .hero p {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-button {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+
+        .section {
+            padding: 80px 0;
+            position: relative;
+        }
+
+        .section:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .section-title {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        .evolution-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 4rem 0;
+            position: relative;
+        }
+
+        .timeline-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .timeline-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .timeline-icon:hover {
+            transform: scale(1.1) rotate(10deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .timeline-arrow {
+            position: absolute;
+            top: 50%;
+            right: -20px;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: #4ecdc4;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .platform-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .platform-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .platform-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 4rem 0;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            margin: 1rem;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .code-evolution {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .code-line {
+            font-family: 'Courier New', monospace;
+            margin: 0.5rem 0;
+            opacity: 0;
+            animation: typewriter 0.5s ease-in-out forwards;
+        }
+
+        .code-line:nth-child(1) { animation-delay: 0.5s; }
+        .code-line:nth-child(2) { animation-delay: 1s; }
+        .code-line:nth-child(3) { animation-delay: 1.5s; }
+        .code-line:nth-child(4) { animation-delay: 2s; }
+
+        @keyframes typewriter {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .future-vision {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(78, 205, 196, 0.1));
+            border-radius: 30px;
+            margin: 2rem 0;
+        }
+
+        .philosophy-quote {
+            font-size: 2rem;
+            font-style: italic;
+            color: #4ecdc4;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .philosophy-quote::before,
+        .philosophy-quote::after {
+            content: '"';
+            font-size: 4rem;
+            color: #ff6b6b;
+            position: absolute;
+            top: -20px;
+        }
+
+        .philosophy-quote::before {
+            left: -30px;
+        }
+
+        .philosophy-quote::after {
+            right: -30px;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1.5rem;
+            animation: bounce 2s infinite;
+            z-index: 1000;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        .mobile-workflow {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 3rem 0;
+            flex-wrap: wrap;
+        }
+
+        .workflow-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            margin: 1rem;
+        }
+
+        .workflow-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            animation: rotateY 3s ease-in-out infinite;
+        }
+
+        @keyframes rotateY {
+            0%, 100% { transform: rotateY(0deg); }
+            50% { transform: rotateY(180deg); }
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.2rem; }
+            .section-title { font-size: 2rem; }
+            .evolution-timeline { flex-direction: column; }
+            .timeline-arrow { display: none; }
+            .platform-grid { grid-template-columns: 1fr; }
+            .philosophy-quote { font-size: 1.5rem; }
+            .philosophy-quote::before,
+            .philosophy-quote::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Particles Background -->
+    <div class="floating-particles" id="particles"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>모바일 퍼스트 글쓰기 OS</h1>
+            <p>말 → 글 → 코드로 이어지는 AI 시대의 컨텐츠 제작 혁명</p>
+            <a href="#evolution" class="cta-button">여정 시작하기</a>
+        </div>
+    </section>
+
+    <!-- Evolution Section -->
+    <section class="section" id="evolution">
+        <div class="container">
+            <h2 class="section-title">콘텐츠 제작의 진화</h2>
+            <div class="evolution-timeline">
+                <div class="timeline-item">
+                    <div class="timeline-icon">🗣️</div>
+                    <h3>말 (Speech)</h3>
+                    <p>개념어, 감정어, 문법의 시작</p>
+                    <div class="timeline-arrow">→</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">✍️</div>
+                    <h3>글 (Writing)</h3>
+                    <p>블로그, 소설, 교재로 확장</p>
+                    <div class="timeline-arrow">→</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-icon">💻</div>
+                    <h3>코드 (Code)</h3>
+                    <p>PWA, 자동화, 에이전트</p>
+                </div>
+            </div>
+
+            <div class="philosophy-quote">
+                "텍스트의 끝은 코드다"
+            </div>
+
+            <div class="code-evolution">
+                <div class="code-line">말의 종류: 개념어 → 교재 (재생산)</div>
+                <div class="code-line">말의 종류: 감정어 → 소설 (소비)</div>
+                <div class="code-line">말의 종류: 문법 → 프로그래밍 (생산)</div>
+                <div class="code-line">LLM = 개발자 프로그래머용 도구</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile First Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">모바일 퍼스트 생산</h2>
+            <div class="mobile-workflow">
+                <div class="workflow-step">
+                    <div class="workflow-icon">📱</div>
+                    <h3>핸드폰 제작</h3>
+                    <p>모바일에서 직접 콘텐츠 생산</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="workflow-icon">🤖</div>
+                    <h3>AI 협업</h3>
+                    <p>ChatGPT/Claude와 실시간 작업</p>
+                </div>
+                <div class="workflow-step">
+                    <div class="workflow-icon">🚀</div>
+                    <h3>즉시 퍼블리시</h3>
+                    <p>PWA로 바로 앱 배포</p>
+                </div>
+            </div>
+
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <p>클릭으로 웹앱 완성</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">100%</div>
+                    <p>기억력 향상</p>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">∞</div>
+                    <p>자동화 가능성</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Strategy Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">플랫폼 전략</h2>
+            <div class="platform-grid">
+                <div class="platform-card">
+                    <div class="platform-icon">📝</div>
+                    <h3>드래프트</h3>
+                    <p><strong>GitHub</strong><br>
+                    개발자들의 놀이터에서 아이디어 초안 작성</p>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-icon">💰</div>
+                    <h3>수익화</h3>
+                    <p><strong>Obsidian Publish</strong><br>
+                    태블릿 친화적 환경에서 프리미엄 콘텐츠</p>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-icon">🏪</div>
+                    <h3>장사 좌판</h3>
+                    <p><strong>WordPress</strong><br>
+                    본격적인 비즈니스 플랫폼</p>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-icon">🌐</div>
+                    <h3>퍼블릭 공개</h3>
+                    <p><strong>네이버/티스토리</strong><br>
+                    대중적 접근성과 SEO 최적화</p>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-icon">🔗</div>
+                    <h3>통합 관리</h3>
+                    <p><strong>노션</strong><br>
+                    모든 플랫폼을 한 곳에서 관리</p>
+                </div>
+                <div class="platform-card">
+                    <div class="platform-icon">💎</div>
+                    <h3>도메인</h3>
+                    <p><strong>카페24</strong><br>
+                    연 550원으로 나만의 영역 확보</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Automation Section -->
+    <section class="section">
+        <div class="container">
+            <h2 class="section-title">자동화와 에이전트</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+                <div>
+                    <h3 style="font-size: 2rem; margin-bottom: 1rem;">🔄 반복 작업 = 프로그래밍</h3>
+                    <ul style="font-size: 1.2rem; line-height: 2;">
+                        <li>📱 <strong>핸드폰</strong>: Claude Connector</li>
+                        <li>💻 <strong>PC</strong>: Claude MCP Desktop</li>
+                        <li>🤖 <strong>GitHub</strong>: Copilot Chat</li>
+                        <li>🎯 <strong>목표</strong>: 수작업 시간 최소화</li>
+                    </ul>
+                </div>
+                <div>
+                    <svg width="300" height="300" viewBox="0 0 300 300">
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
+                                <stop offset="100%" style="stop-color:#4ecdc4;stop-opacity:1" />
+                            </linearGradient>
+                        </defs>
+                        <circle cx="150" cy="150" r="120" fill="none" stroke="url(#grad1)" stroke-width="8" stroke-dasharray="0 754">
+                            <animate attributeName="stroke-dasharray" values="0 754;377 377;754 0;0 754" dur="3s" repeatCount="indefinite"/>
+                        </circle>
+                        <text x="150" y="155" text-anchor="middle" fill="white" font-size="24" font-weight="bold">자동화</text>
+                        <text x="150" y="180" text-anchor="middle" fill="#4ecdc4" font-size="16">AUTOMATION</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Future Vision Section -->
+    <section class="section">
+        <div class="container">
+            <div class="future-vision">
+                <h2 class="section-title">미래 전망</h2>
+                <div class="philosophy-quote" style="margin: 3rem 0;">
+                    "AI 시대에서 기능보다 중요한 것은<br>
+                    내용의 질, 생각 그 자체, 철학이다"
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 3rem 0;">
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🎨</div>
+                        <h3>디자인의 민주화</h3>
+                        <p>어설픈 웹 디자이너도 AI와 함께라면 프로급 결과물</p>
+                    </div>
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">💭</div>
+                        <h3>사고의 중요성</h3>
+                        <p>기술이 평준화되면서 독창적 사고가 차별화 요소</p>
+                    </div>
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">📚</div>
+                        <h3>철학의 시대</h3>
+                        <p>말은 철학이 되어야 하고, 넋두리도 콘텐츠가 된다</p>
+                    </div>
+                </div>
+
+                <div style="background: rgba(0,0,0,0.2); padding: 2rem; border-radius: 15px; margin-top: 3rem;">
+                    <h3 style="color: #ff6b6b; margin-bottom: 1rem;">핵심 메시지</h3>
+                    <p style="font-size: 1.2rem;">
+                        ChatGPT가 멋진 리포트를 만들어주는 시대에서<br>
+                        그 <strong>말</strong>이 되어야 하고, 말은 <strong>철학</strong>이 되어야 한다.<br>
+                        이제 넋두리도 멋있게 웹페이지가 될 수 있다.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scroll to Top Button -->
+    <div class="scroll-indicator" onclick="scrollToTop()">↑</div>
+
+    <script>
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.width = Math.random() * 10 + 5 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Smooth scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.8s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+
+        // Parallax effect
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallax = document.querySelector('.floating-particles');
+            const speed = scrolled * 0.5;
+            parallax.style.transform = `translateY(${speed}px)`;
+        });
+
+        // Interactive platform cards
+        document.querySelectorAll('.platform-card').forEach(card => {
+            card.addEventListener('click', () => {
+                card.style.transform = 'scale(1.05) translateY(-15px)';
+                setTimeout(() => {
+                    card.style.transform = 'translateY(-10px)';
+                }, 200);
+            });
+        });
+
+        // Timeline interaction
+        document.querySelectorAll('.timeline-icon').forEach(icon => {
+            icon.addEventListener('click', () => {
+                icon.style.background = 'linear-gradient(45deg, #4ecdc4, #45b7d1)';
+                setTimeout(() => {
+                    icon.style.background = 'linear-gradient(45deg, #ff6b6b, #4ecdc4)';
+                }, 1000);
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+            
+            // Observe all sections for animations
+            document.querySelectorAll('.section').forEach(section => {
+                observer.observe(section);
+            });
+        });
+
+        // CSS animation injection
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
